@@ -1,0 +1,17 @@
+{"properties": [
+  {
+    "name": "profile.pics.directory",
+    "type": "java.lang.String",
+    "description": "A description for 'profile.pics.directory'"
+  },
+  {
+    "name": "jwt.expiration",
+    "type": "java.lang.String",
+    "description": "A description for 'jwt.expiration'"
+  },
+  {
+    "name": "jwt.secret",
+    "type": "java.lang.String",
+    "description": "A description for 'jwt.secret'"
+  }
+]}
