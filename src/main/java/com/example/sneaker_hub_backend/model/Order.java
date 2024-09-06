@@ -3,6 +3,7 @@ package com.example.sneaker_hub_backend.model;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "orders")
@@ -14,6 +15,15 @@ public class Order {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private AppUser user;
+
+    @ManyToOne
+    @JoinColumn(name = "seller_id")
+    private AppUser seller;
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderItem> orderItems;
+
+    // @OneToMany(mappedBy = "order")
+    // private List<OrderItem> orderItems;
 
     @Column(name = "customer_name")
     private String customerName;
@@ -28,14 +38,15 @@ public class Order {
 
     @Column(name = "order_date")
     private LocalDateTime orderDate;
-    
+
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
-    // Constructors
+    // Constructors, Getters, and Setters
+
     public Order() {}
 
-    public Order(AppUser user, String customerName, String address, String mobileNumber, BigDecimal totalAmount) {
+    public Order(AppUser user, String customerName, String address, String mobileNumber, BigDecimal totalAmount, AppUser seller) {
         this.user = user;
         this.customerName = customerName;
         this.address = address;
@@ -43,9 +54,9 @@ public class Order {
         this.totalAmount = totalAmount;
         this.orderDate = LocalDateTime.now();
         this.status = OrderStatus.PLACED;
+        this.seller = seller;
     }
 
-    // Getters and setters
     public Long getId() {
         return id;
     }
@@ -60,6 +71,22 @@ public class Order {
 
     public void setUser(AppUser user) {
         this.user = user;
+    }
+
+    public AppUser getSeller() {
+        return seller;
+    }
+
+    public void setSeller(AppUser seller) {
+        this.seller = seller;
+    }
+
+    public List<OrderItem> getOrderItems() {
+        return orderItems;
+    }
+
+    public void setOrderItems(List<OrderItem> orderItems) {
+        this.orderItems = orderItems;
     }
 
     public String getCustomerName() {

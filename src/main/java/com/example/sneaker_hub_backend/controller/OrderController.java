@@ -2,6 +2,7 @@ package com.example.sneaker_hub_backend.controller;
 
 import com.example.sneaker_hub_backend.model.Order;
 import com.example.sneaker_hub_backend.model.OrderStatus;
+import com.example.sneaker_hub_backend.service.CartService;
 import com.example.sneaker_hub_backend.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -16,9 +17,13 @@ public class OrderController {
     @Autowired
     private OrderService orderService;
 
+    @Autowired
+    private CartService cartService; 
+
     @PostMapping
     public ResponseEntity<Order> createOrder(@RequestBody Order order, @RequestParam Long userId) {
         Order createdOrder = orderService.createOrder(userId, order);
+        cartService.clearCart(userId);
         return ResponseEntity.ok(createdOrder);
     }
 
@@ -27,6 +32,12 @@ public class OrderController {
         List<Order> orders = orderService.getOrdersByUserId(userId);
         return ResponseEntity.ok(orders);
     }
+
+    // @GetMapping("/seller/{sellerId}")
+    // public ResponseEntity<List<Order>> getOrdersBySellerId(@PathVariable Long sellerId) {
+    //     List<Order> orders = orderService.getOrdersBySellerId(sellerId);
+    //     return ResponseEntity.ok(orders);
+    // }
 
     @GetMapping("/{orderId}")
     public ResponseEntity<Order> getOrderById(@PathVariable Long orderId) {

@@ -40,6 +40,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.POST, "/users/signup", "/users/login").permitAll()
                 .requestMatchers(HttpMethod.GET, "/users/check-username").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/products").permitAll()
                 .requestMatchers(HttpMethod.GET, "/profilePic/**").permitAll()
                 .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
                 .requestMatchers(HttpMethod.GET, "/{id:[0-9]+}/products/**").permitAll()    
