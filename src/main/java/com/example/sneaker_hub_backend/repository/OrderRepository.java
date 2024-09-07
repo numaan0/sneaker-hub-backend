@@ -13,6 +13,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     List<Order> findByUserId(Long userId);
 
-    // @Query("SELECT DISTINCT o FROM Order o JOIN o.orderItems oi WHERE oi.seller.id = :sellerId")
-    // List<Order> findOrdersBySellerId(@Param("sellerId") Long sellerId);
+    @Query("SELECT DISTINCT o FROM Order o JOIN o.orderItems oi WHERE oi.seller.id = :sellerId")
+    List<Order> findOrdersBySellerId(@Param("sellerId") Long sellerId);
 }

@@ -69,9 +69,9 @@ public class OrderService {
         return orders;
     }
 
-    // public List<Order> getOrdersBySellerId(Long sellerId) {
-    //     return orderRepository.findOrdersBySellerId(sellerId);
-    // }
+    public List<Order> getOrdersBySellerId(Long sellerId) {
+        return orderRepository.findOrdersBySellerId(sellerId);
+    }
 
     public Optional<Order> getOrderById(Long orderId) {
         return orderRepository.findById(orderId);
