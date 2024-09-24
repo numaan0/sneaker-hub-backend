@@ -16,9 +16,9 @@ public class Order {
     @JoinColumn(name = "user_id")
     private AppUser user;
 
-    @ManyToOne
-    @JoinColumn(name = "seller_id")
-    private AppUser seller;
+    // @ManyToOne
+    // @JoinColumn(name = "seller_id")
+    // private AppUser seller;
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> orderItems;
 
@@ -46,7 +46,7 @@ public class Order {
 
     public Order() {}
 
-    public Order(AppUser user, String customerName, String address, String mobileNumber, BigDecimal totalAmount, AppUser seller) {
+    public Order(AppUser user, String customerName, String address, String mobileNumber, BigDecimal totalAmount) {
         this.user = user;
         this.customerName = customerName;
         this.address = address;
@@ -54,7 +54,6 @@ public class Order {
         this.totalAmount = totalAmount;
         this.orderDate = LocalDateTime.now();
         this.status = OrderStatus.PLACED;
-        this.seller = seller;
     }
 
     public Long getId() {
@@ -71,14 +70,6 @@ public class Order {
 
     public void setUser(AppUser user) {
         this.user = user;
-    }
-
-    public AppUser getSeller() {
-        return seller;
-    }
-
-    public void setSeller(AppUser seller) {
-        this.seller = seller;
     }
 
     public List<OrderItem> getOrderItems() {

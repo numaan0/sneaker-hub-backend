@@ -28,9 +28,8 @@ public class ProductController {
     @Autowired
     private AppUserService appUserService;
 
-    @PostMapping("/{id}")
-    public ResponseEntity<Product> createOrUpdateProduct(
-            @PathVariable(value = "id", required = false) Long id,
+    @PostMapping
+    public ResponseEntity<Product> createProduct(
             @RequestParam("name") String name,
             @RequestParam("description") String description,
             @RequestParam("category") String category,
@@ -38,49 +37,65 @@ public class ProductController {
             @RequestParam("stock") String stock,
             @RequestParam("seller_id") Long sellerId,
             @RequestParam(value = "image", required = false) MultipartFile image) throws IOException {
-    
+
         // Fetch the seller
         Optional<AppUser> sellerOptional = appUserService.getAppUserById(sellerId);
         if (!sellerOptional.isPresent()) {
-            return ResponseEntity.badRequest().body(null); // Handle the case where the seller is not found
+            return ResponseEntity.badRequest().body(null);
         }
         AppUser seller = sellerOptional.get();
-    
+
         // Handle image upload
         String imageUrl = null;
         if (image != null && !image.isEmpty()) {
             imageUrl = fileUploadService.uploadFile(sellerId + "/products", "product_" + System.currentTimeMillis() + ".jpg", image);
         }
-    
-        // Check if updating an existing product
-        Product product;
-        if (id != null && id > 0) {
-            Optional<Product> existingProductOptional = productService.getProductById(id);
-            if (existingProductOptional.isPresent()) {
-                product = existingProductOptional.get();
-                // Update existing product's fields
-                product.setName(name);
-                product.setDescription(description);
-                product.setCategory(category);
-                product.setPrice(new BigDecimal(price));
-                product.setStock(Integer.parseInt(stock));
-                if (imageUrl != null) {
-                    product.setImageUrl(imageUrl);
-                }
-            } else {
-                // If the product doesn't exist, return a 404 response
-                return ResponseEntity.notFound().build();
-            }
-        } else {
-            // Create a new product
-            product = new Product(name, description, category, new BigDecimal(price), imageUrl, Integer.parseInt(stock), seller);
-        }
-    
+
+        // Create a new product
+        Product product = new Product(name, description, category, new BigDecimal(price), imageUrl, Integer.parseInt(stock),"",0,0,0 ,seller,new BigDecimal(0));
         Product savedProduct = productService.saveProduct(product);
-    
+
         return ResponseEntity.ok(savedProduct);
     }
-    
+
+    // POST method for updating existing products with an id
+    @PostMapping("/{id}")
+    public ResponseEntity<Product> updateProduct(
+            @PathVariable("id") Long id,
+            @RequestParam("name") String name,
+            @RequestParam("description") String description,
+            @RequestParam("category") String category,
+            @RequestParam("price") String price,
+            @RequestParam("stock") String stock,
+            @RequestParam("seller_id") Long sellerId,
+            @RequestParam(value = "image", required = false) MultipartFile image) throws IOException {
+
+        Optional<AppUser> sellerOptional = appUserService.getAppUserById(sellerId);
+        if (!sellerOptional.isPresent()) {
+            return ResponseEntity.badRequest().body(null);
+        }
+        AppUser seller = sellerOptional.get();
+
+        Optional<Product> existingProductOptional = productService.getProductById(id);
+        if (!existingProductOptional.isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Product product = existingProductOptional.get();
+        product.setName(name);
+        product.setDescription(description);
+        product.setCategory(category);
+        product.setPrice(new BigDecimal(price));
+        product.setStock(Integer.parseInt(stock));
+
+        if (image != null && !image.isEmpty()) {
+            String imageUrl = fileUploadService.uploadFile(sellerId + "/products", "product_" + System.currentTimeMillis() + ".jpg", image);
+            product.setImageUrl(imageUrl);
+        }
+
+        Product updatedProduct = productService.saveProduct(product);
+        return ResponseEntity.ok(updatedProduct);
+    }
 
     @GetMapping
     public ResponseEntity<List<Product>> getAllProducts() {
@@ -108,5 +123,20 @@ public class ProductController {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.ok(products);
+    }
+
+    @GetMapping("/related/{category}/{id}")
+    public ResponseEntity<List<Product>> getRelatedProducts(@PathVariable String category, @PathVariable Long id) {
+        List<Product> relatedProducts = productService.getRelatedProducts(category, id);
+        return ResponseEntity.ok(relatedProducts);
+    }
+    
+    @GetMapping("/categories")
+    public ResponseEntity<List<String>> getCategories() {
+        List<String> categories = productService.getDistinctCategories();
+        if (categories.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(categories);
     }
 }

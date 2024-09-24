@@ -24,7 +24,7 @@ public class OrderItem {
     private BigDecimal price;
 
     @ManyToOne
-    @JoinColumn(name = "seller_id", insertable = false, updatable = false)
+    @JoinColumn(name = "seller_id")
     private AppUser seller;
 
     @ManyToOne

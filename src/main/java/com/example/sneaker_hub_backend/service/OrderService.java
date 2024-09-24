@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.time.LocalDateTime;
+
 
 @Service
 public class OrderService {
@@ -24,6 +26,9 @@ public class OrderService {
     @Autowired
     private AppUserService appUserService;
 
+    @Autowired
+    private ProductService productService;
+
     
 
     @Autowired
@@ -33,25 +38,47 @@ public class OrderService {
     private ProductRepository productRepository;
 
     public Order createOrder(Long userId, Order order) {
+        // Fetch the user placing the order
         Optional<AppUser> userOpt = appUserService.getAppUserById(userId);
         if (userOpt.isEmpty()) {
             throw new RuntimeException("User not found");
         }
-        
+    
         // Set the user for the order
         order.setUser(userOpt.get());
     
         // Set the order reference for each OrderItem
         for (OrderItem item : order.getOrderItems()) {
-            item.setOrder(order);
+            // Check if the seller and product exist
+            if (item.getSeller() == null || item.getSeller().getId() == null) {
+                throw new RuntimeException("Seller ID is missing or invalid");
+            }
+            if (item.getProduct() == null || item.getProduct().getId() == null) {
+                throw new RuntimeException("Product ID is missing or invalid");
+            }
+    
+            // Fetch the seller and product based on their IDs
+            Optional<AppUser> sellerOpt = appUserService.getAppUserById(item.getSeller().getId());
+            Optional<Product> productOpt = productService.getProductById(item.getProduct().getId());
+    
+            if (sellerOpt.isEmpty() || productOpt.isEmpty()) {
+                throw new RuntimeException("Seller or product not found");
+            }
+    
+            // Set seller, product, and order reference for the OrderItem
+            item.setSeller(sellerOpt.get());
+            item.setProduct(productOpt.get());
+            item.setOrder(order);  // Set the order reference in each OrderItem
         }
     
-        // Set the initial order status
+        // Set initial order status and date
         order.setStatus(OrderStatus.PLACED);
-        
-        // Save and return the order
+        order.setOrderDate(LocalDateTime.now());
+    
+        // Save the order (this will also save the order items because of the cascade setting)
         return orderRepository.save(order);
     }
+    
 
     public List<Order> getOrdersByUserId(Long userId) {
         List<Order> orders = orderRepository.findByUserId(userId);

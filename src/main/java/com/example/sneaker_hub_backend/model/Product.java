@@ -14,7 +14,18 @@ public class Product {
     private String category;
     private BigDecimal price;
     private String imageUrl;
+    @Column(nullable = true)
     private int stock;
+    @Column(nullable = true)
+    private int discount;
+    @Column(nullable = true)
+    private int rating;
+    @Column(nullable = true)
+    private int reviewsCount;
+    @Column(nullable = true)
+    private String brand;
+    @Column(nullable = true)
+    private BigDecimal size;
 
     @ManyToOne
     @JoinColumn(name = "seller_id", referencedColumnName = "id")
@@ -24,13 +35,18 @@ public class Product {
     public Product() {}
 
     // Parameterized constructor
-    public Product(String name, String description, String category, BigDecimal price, String imageUrl, int stock, AppUser seller) {
+    public Product(String name, String description, String category, BigDecimal price, String imageUrl, int stock,String brand,int rating,int reviewsCount,int discount, AppUser seller, BigDecimal size) {
         this.name = name;
         this.description = description;
         this.category = category;
         this.price = price;
         this.imageUrl = imageUrl;
         this.stock = stock;
+        this.brand = brand;
+        this.discount = discount;
+        this.rating = rating;
+        this.reviewsCount = reviewsCount;
+        this.size = size;
         this.seller = seller;  // Changed from seller_id to seller
     }
 
@@ -50,5 +66,44 @@ public class Product {
     public int getStock() { return stock; }
     public void setStock(int stock) { this.stock = stock; }
     public AppUser getSeller() { return seller; }  // Changed from getSeller_id to getSeller
-    public void setSeller(AppUser seller) { this.seller = seller; }  // Changed from setSeller_id to setSeller
+    public void setSeller(AppUser seller) { this.seller = seller; }  
+    public int getDiscount() {
+        return discount;
+    }
+    
+    public void setDiscount(int discount) {
+        this.discount = discount;
+    }
+    
+    public int getRating() {
+        return rating;
+    }
+    
+    public void setRating(int rating) {
+        this.rating = rating;
+    }
+    
+    public int getReviewsCount() {
+        return reviewsCount;
+    }
+    
+    public void setReviewsCount(int reviewsCount) {
+        this.reviewsCount = reviewsCount;
+    }
+    
+    public String getBrand() {
+        return brand;
+    }
+    
+    public void setBrand(String brand) {
+        this.brand = brand;
+    }
+    public BigDecimal getSize() {
+        return size;
+    }
+    
+    public void setBrand(BigDecimal size) {
+        this.size = size;
+    }
+    // Changed from setSeller_id to setSeller
 }

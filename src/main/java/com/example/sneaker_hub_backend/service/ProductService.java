@@ -33,4 +33,13 @@ public class ProductService {
     public List<Product> getProductsBySeller(Long sellerId) {
         return productRepository.findBySellerId(sellerId);  // Changed from findBySeller_id to findBySellerId
     }
+    public List<Product> getRelatedProducts(String category, Long excludeId) {
+        List<Product> relatedProducts = productRepository.findByCategory(category);
+        relatedProducts.removeIf(product -> product.getId().equals(excludeId));
+        return relatedProducts;
+    }
+
+    public List<String> getDistinctCategories() {
+        return productRepository.findDistinctCategories();
+    }
 }
