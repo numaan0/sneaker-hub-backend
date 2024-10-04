@@ -1,6 +1,7 @@
 package com.example.sneaker_hub_backend.service;
 
 import com.example.sneaker_hub_backend.model.Product;
+import com.example.sneaker_hub_backend.repository.OrderItemRepository;
 import com.example.sneaker_hub_backend.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,6 +14,10 @@ public class ProductService {
 
     @Autowired
     private ProductRepository productRepository;
+
+
+    @Autowired
+    private OrderItemRepository orderItemRepository;
 
     public Product saveProduct(Product product) {
         return productRepository.save(product);
@@ -41,5 +46,14 @@ public class ProductService {
 
     public List<String> getDistinctCategories() {
         return productRepository.findDistinctCategories();
+    }
+    public void deleteProductsBySellerId(Long sellerId) {
+        // orderItemRepository.deleteByProductId(productId);
+        List<Product> products = productRepository.findBySellerId(sellerId);
+
+        for (Product product : products) {
+            orderItemRepository.deleteByProductId(product.getId());
+        }
+        productRepository.deleteBySellerId(sellerId); 
     }
 }

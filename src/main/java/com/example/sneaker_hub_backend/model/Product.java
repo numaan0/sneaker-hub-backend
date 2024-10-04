@@ -49,7 +49,9 @@ public class Product {
         this.size = size;
         this.seller = seller;  // Changed from seller_id to seller
     }
-
+    public Product(String name, String description, String category, BigDecimal price, String imageUrl, int stock, AppUser seller, BigDecimal size) {
+        this(name, description, category, price, imageUrl, stock, "Nike", 3, 9, 0, seller, size);
+    }
     // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }

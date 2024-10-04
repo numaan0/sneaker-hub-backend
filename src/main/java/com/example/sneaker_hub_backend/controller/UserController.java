@@ -9,9 +9,11 @@ import java.time.LocalDate;
 import java.util.Collections;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
+// import org.hibernate.mapping.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import java.util.List;
 
 @RestController
 @RequestMapping("/users")
@@ -23,31 +25,46 @@ public class UserController {
     @Autowired
     private JwtUtil jwtUtil;
 
-@PostMapping("/login")
-public ResponseEntity<Map<String, Object>> login(@RequestBody AppUser user) {
-    try {
-        if (appUserService.validateUser(user.getUsername(), user.getPassword())) {
-            UserDetails userDetails = appUserService.loadUserByUsername(user.getUsername());
-            String token = jwtUtil.generateToken(userDetails);
-
-            AppUser existingUser = appUserService.findByUsername(user.getUsername())
-                                                .orElseThrow(() -> new RuntimeException("User not found"));
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("token", token);
-            response.put("user", existingUser);
-
-            return ResponseEntity.ok(response);
+    @PostMapping("/login")
+    public ResponseEntity<Map<String, Object>> login(@RequestBody AppUser user) {
+        try {
+            // Validate username and password
+            if (appUserService.validateUser(user.getUsername(), user.getPassword())) {
+                // Load user details
+                UserDetails userDetails = appUserService.loadUserByUsername(user.getUsername());
+    
+                // Fetch the existing user from the database
+                AppUser existingUser = appUserService.findByUsername(user.getUsername())
+                                                     .orElseThrow(() -> new RuntimeException("User not found"));
+    
+                // Check if the user's status is "Suspend"
+                if ("Suspend".equalsIgnoreCase(existingUser.getStatus())) {
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                                         .body(Collections.singletonMap("error", "Account is suspended"));
+                }
+    
+                // Generate JWT token for the user
+                String token = jwtUtil.generateToken(userDetails);
+    
+                // Prepare the response
+                Map<String, Object> response = new HashMap<>();
+                response.put("token", token);
+                response.put("user", existingUser);
+    
+                return ResponseEntity.ok(response);
+            }
+    
+            // Invalid credentials
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                                 .body(Collections.singletonMap("error", "Invalid credentials"));
+        } catch (Exception e) {
+            // Log the exception details
+            // System.out.print(e);
+            // System.out.print("error in login");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                 .body(Collections.singletonMap("error", "Internal server error"));
         }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonMap("error", "Invalid credentials"));
-    } catch (Exception e) {
-        // Log the exception details
-        System.out.print(e);
-        System.out.print("error in login");
-        // logger.error("Login error: ", e);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.singletonMap("error", "Internal server error"));
     }
-}
 
 
     @GetMapping("/check-username")
@@ -138,6 +155,14 @@ public ResponseEntity<?> updateUserDetails(@PathVariable String username, @Reque
         if (userUpdates.containsKey("gender")) {
             existingUser.setGender((String) userUpdates.get("gender"));
         }
+        if (userUpdates.containsKey("status")) {
+            String newStatus = (String) userUpdates.get("status");
+            if ("Active".equalsIgnoreCase(newStatus) || "Suspend".equalsIgnoreCase(newStatus)) {
+                existingUser.setStatus(newStatus);
+            } else {
+                return ResponseEntity.badRequest().body("Invalid status. Must be 'Active' or 'Suspend'.");
+            }
+        }
 
         // Save updated user
         AppUser updatedUser = appUserService.updateuser(existingUser);
@@ -149,7 +174,38 @@ public ResponseEntity<?> updateUserDetails(@PathVariable String username, @Reque
     }
 }
 
+@GetMapping("/all")
+public ResponseEntity<?> getAllUsers() {
+    try {
+        // Fetch all users from the database
+        List<AppUser> users = appUserService.getAllUsers();
+        return ResponseEntity.ok(users);
+    } catch (Exception e) {
+        // Handle exceptions such as database errors
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while fetching users");
+    }
+}
 
+@DeleteMapping("/delete/{username}")
+public ResponseEntity<?> deleteUser(@PathVariable String username) {
+    try {
+        // Check if the user exists
+        AppUser existingUser = appUserService.findByUsername(username)
+                                             .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Delete the user
+        // String newStatus = "Delete";
+        // existingUser.setStatus(newStatus);
+        // appUserService.updateuser(existingUser);
+        appUserService.deleteUser(existingUser);
+
+        return ResponseEntity.ok("User deleted successfully");
+    } catch (Exception e) {
+        e.printStackTrace();
+        // Handle exceptions such as database errors
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while deleting the user");
+    }
+}
 
 
 }

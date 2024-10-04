@@ -38,12 +38,12 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable()) // Disable CSRF protection
             .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Enable CORS
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.POST, "/users/signup", "/users/login").permitAll()
+                .requestMatchers(HttpMethod.POST, "/users/signup", "/users/login","/users/categories").permitAll()
                 .requestMatchers(HttpMethod.GET, "/users/check-username").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/products").permitAll()
                 .requestMatchers(HttpMethod.GET, "/profilePic/**").permitAll()
                 .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
-                .requestMatchers(HttpMethod.GET, "/{id:[0-9]+}/products/**").permitAll()    
+                .requestMatchers(HttpMethod.GET, "/{id:[0-9]+}/products/**","/api/products/categories").permitAll()    
                 .requestMatchers("/static/**").permitAll()
                 .anyRequest().authenticated() // All other requests require authentication
             )

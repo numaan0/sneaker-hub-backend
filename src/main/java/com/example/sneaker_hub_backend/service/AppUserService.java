@@ -2,11 +2,17 @@ package com.example.sneaker_hub_backend.service;
 
 import com.example.sneaker_hub_backend.model.AppUser;
 import com.example.sneaker_hub_backend.repository.AppUserRepository;
+
+// import org.hibernate.mapping.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 import java.util.Optional;
 
@@ -15,6 +21,17 @@ public class AppUserService {
 
     @Autowired
     private AppUserRepository appUserRepository;
+
+    @Autowired 
+    private ProductService productService;
+
+    private final OrderService orderService;
+
+    @Autowired
+    public AppUserService(OrderService orderService) {
+        this.orderService = orderService;
+    }
+
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -65,4 +82,19 @@ public class AppUserService {
      public Optional<AppUser> getAppUserById(Long id) {
         return appUserRepository.findById(id);
     }
+
+    public List<AppUser> getAllUsers() {
+        return appUserRepository.findAll().stream()
+            .filter(user -> !"admin".equalsIgnoreCase(user.getUserType()))  
+            .filter(user -> !"delete".equalsIgnoreCase(user.getStatus()))  
+            .collect(Collectors.toList());
+    }
+
+@Transactional
+public void deleteUser(AppUser user) {
+    Long userId = user.getId();
+    productService.deleteProductsBySellerId(userId);
+    orderService.deleteOrdersByUserId(userId);
+    appUserRepository.delete(user); 
+}
 }

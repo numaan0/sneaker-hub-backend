@@ -10,6 +10,7 @@ import com.example.sneaker_hub_backend.repository.OrderRepository;
 import com.example.sneaker_hub_backend.repository.ProductRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,8 +24,12 @@ public class OrderService {
     @Autowired
     private OrderRepository orderRepository;
 
+    private final AppUserService appUserService;
+
     @Autowired
-    private AppUserService appUserService;
+    public OrderService(@Lazy AppUserService appUserService) {
+        this.appUserService = appUserService;
+    }
 
     @Autowired
     private ProductService productService;
@@ -112,5 +117,12 @@ public class OrderService {
             return orderRepository.save(order);
         }
         throw new RuntimeException("Order not found");
+    }
+    public void deleteOrdersByUserId(Long userId) {
+        orderRepository.deleteByUserId(userId); 
+    }
+
+    public List<Order> getAllOrders() {
+        return orderRepository.findAll(); 
     }
 }
